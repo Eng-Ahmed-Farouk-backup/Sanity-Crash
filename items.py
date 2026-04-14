@@ -26,3 +26,17 @@ class HealthPotion3(Item):
     def use(self, player):
         player.heal(35)
         player.inventory.remove(self)
+
+class StrengthPotion1(Item):
+    def __init__(self):
+        super().__init__("Strength Potion", "Increases strength by 5 for 3 turns", 7, 4)
+    def use(self, player):
+        player.strength += 5
+        player.inventory.remove(self)
+
+class StrengthPotion2(Item):
+    def __init__(self):
+        super().__init__("Strength Potion+", "Increases strength by 10 for 3 turns", 15, 11)
+    def use(self, player):
+        player.strength += 10
+        player.inventory.remove(self)
