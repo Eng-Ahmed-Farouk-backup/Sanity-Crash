@@ -1,0 +1,155 @@
+name: Build Sanity Crash - Console RPG
+
+on:
+  push:
+    tags:
+      - 'v*'
+  workflow_dispatch:
+
+jobs:
+  build-windows:
+    runs-on: windows-latest
+    steps:
+    - uses: actions/checkout@v4
+    
+    - name: Set up Python
+      uses: actions/setup-python@v5
+      with:
+        python-version: '3.10'
+    
+    - name: Install dependencies
+      run: |
+        python -m pip install --upgrade pip
+        pip install pyinstaller keyboard
+    
+    - name: Build executable with PyInstaller
+      run: |
+        pyinstaller --onefile --console --name "Sanity_Crash_RPG" demo.py
+    
+    - name: Upload Windows executable
+      uses: actions/upload-artifact@v4
+      with:
+        name: windows-executable
+        path: dist/Sanity_Crash_RPG.exe
+
+  build-linux:
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v4
+    
+    - name: Set up Python
+      uses: actions/setup-python@v5
+      with:
+        python-version: '3.10'
+    
+    - name: Install system dependencies for keyboard library
+      run: |
+        sudo apt-get update
+        sudo apt-get install -y python3-dev
+    
+    - name: Install Python dependencies
+      run: |
+        python -m pip install --upgrade pip
+        pip install pyinstaller keyboard
+    
+    - name: Build executable with PyInstaller
+      run: |
+        pyinstaller --onefile --console --name "Sanity_Crash_RPG" demo.py
+    
+    - name: Upload Linux executable
+      uses: actions/upload-artifact@v4
+      with:
+        name: linux-executable
+        path: dist/Sanity_Crash_RPG
+
+  build-macos:
+    runs-on: macos-latest
+    steps:
+    - uses: actions/checkout@v4
+    
+    - name: Set up Python
+      uses: actions/setup-python@v5
+      with:
+        python-version: '3.10'
+    
+    - name: Install dependencies
+      run: |
+        python -m pip install --upgrade pip
+        pip install pyinstaller keyboard
+    
+    - name: Build executable with PyInstaller
+      run: |
+        pyinstaller --onefile --console --name "Sanity_Crash_RPG" demo.py
+    
+    - name: Upload macOS executable
+      uses: actions/upload-artifact@v4
+      with:
+        name: macos-executable
+        path: dist/Sanity_Crash_RPG
+
+  create-release:
+    needs: [build-windows, build-linux, build-macos]
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+    - uses: actions/download-artifact@v4
+      with:
+        path: artifacts
+    
+    - name: Organize artifacts
+      run: |
+        mkdir release_files
+        cp artifacts/windows-executable/Sanity_Crash_RPG.exe release_files/Sanity_Crash_RPG_Windows.exe
+        cp artifacts/linux-executable/Sanity_Crash_RPG release_files/Sanity_Crash_RPG_Linux
+        cp artifacts/macos-executable/Sanity_Crash_RPG release_files/Sanity_Crash_RPG_macOS
+        chmod +x release_files/Sanity_Crash_RPG_Linux
+        chmod +x release_files/Sanity_Crash_RPG_macOS
+    
+    - name: Create Release
+      uses: softprops/action-gh-release@v1
+      with:
+        files: |
+          release_files/Sanity_Crash_RPG_Windows.exe
+          release_files/Sanity_Crash_RPG_Linux
+          release_files/Sanity_Crash_RPG_macOS
+        body: |
+          # SANITY CRASH - Console RPG
+          
+          ### Story
+          Your grandmother passed away 3 years ago. For her memorial, your family travels to her grave in the middle of the desert—exactly where she wanted to be buried.
+          
+          But when your family leaves without you, you find yourself in the desert with no way out
+          
+          As you wander through the desert, you encounter bandits, mysterious strangers, and a house that appears from nowhere. Every choice you make could mean the difference between survival and death in this desert
+          
+          ### Controls
+          - `up arrow/down arrow` - Navigate menus
+          - `ENTER` - Select option
+          - `SPACE` - Skip text scrolling
+          
+          
+          ### Version History
+          **Act 1 - The Desert**
+          - Complete first act of the story
+          - Multiple branching paths including:
+            - Going with family vs staying home
+            - Wandering the desert vs waiting at the grave
+            - Accepting the stranger's deal vs refusing
+            - Market interactions (buying, stealing)
+            - Multiple enemy encounters (Bandit, Stranger, Child)
+          - Item system with health and strength potions
+          - Difficulty settings
+          
+          *More acts coming soon!*
+          
+          ### Known Issues
+          - The `keyboard` library may require administrator/sudo permissions on some systems
+          - If you encounter permission issues, run the executable as administrator
+          
+          ### Support
+          Report bugs and issues on the GitHub Issues page.
+        draft: false
+        prerelease: false
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
