@@ -20,7 +20,7 @@ def interactive_menu(options, header = ""):
         for i,option in enumerate(options):
             print(f"-> {option}" if i == current else f"   {option}")
         
-        key = keyboard.read_key()
+        key = keyboard.read_key(suppress = True)
         if key == "up" or key == "down":
             current = (current + 1)%len(options) if key == "down" else (current - 1)%len(options)
         elif key == "enter":
